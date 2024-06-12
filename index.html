@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hacker Portal - Home</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Hacker Portal</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="commands.html">Commands</a>
+            </nav>
+        </header>
+        <main>
+            <div class="terminal">
+                <div id="terminal-content"></div>
+                <input type="text" id="terminal-input" autofocus>
+            </div>
+            <div class="search-section">
+                <h2>Search GitHub Account</h2>
+                <form id="search-form">
+                    <input type="text" id="search-input" placeholder="Enter GitHub username or email" required>
+                    <button type="submit">Search</button>
+                </form>
+                <div id="search-results"></div>
+            </div>
+        </main>
+        <footer>
+            <p>© 2024 Hacker Portal</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
