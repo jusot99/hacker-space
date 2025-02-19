@@ -7,33 +7,17 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Hacker Portal</h1>
-            <nav>
-                <a href="index.html">Home</a>
-                <a href="about.html">About</a>
-                <a href="commands.html">Commands</a>
-            </nav>
-        </header>
-        <main>
-            <div class="terminal">
-                <div id="terminal-content"></div>
-                <input type="text" id="terminal-input" autofocus>
-            </div>
-            <div class="search-section">
-                <h2>Search GitHub Account</h2>
-                <form id="search-form">
-                    <input type="text" id="search-input" placeholder="Enter GitHub username or email" required>
-                    <button type="submit">Search</button>
-                </form>
-                <div id="search-results"></div>
-            </div>
-        </main>
-        <footer>
-            <p>© 2024 Hacker Portal</p>
-        </footer>
+
+    <div id="terminal">
+        <div id="output">
+            <p>Welcome to <span class="green">CyberTerminal</span>. Type <span class="yellow">help</span> to get started.</p>
+        </div>
+        <div class="input-line">
+            <span class="prompt">guest@cyber:~$</span>
+            <input type="text" id="command-input" autofocus>
+        </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>

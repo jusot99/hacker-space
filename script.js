@@ -1,100 +1,124 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const terminalInput = document.getElementById('terminal-input');
-    const terminalContent = document.getElementById('terminal-content');
-    const searchForm = document.getElementById('search-form');
-    const searchInput = document.getElementById('search-input');
-    const searchResults = document.getElementById('search-results');
+document.addEventListener("DOMContentLoaded", function () {
+    const commandInput = document.getElementById("command-input");
+    const output = document.getElementById("output");
 
-    terminalInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            const command = terminalInput.value.trim();
+    // Fetch user's location and country via Geolocation API
+    function getUserLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                // Use reverse geocoding API to fetch country name
+                fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`)
+                    .then(response => response.json())
+                    .then(data => {
+                        printOutput(`Your location: ${data.city || "Unknown City"}, ${data.countryName}`);
+                    })
+                    .catch(error => {
+                        printOutput(`<span class="red">Could not fetch location.</span>`);
+                    });
+            });
+        } else {
+            printOutput(`<span class="red">Geolocation is not supported by this browser.</span>`);
+        }
+    }
+
+    getUserLocation();
+
+    commandInput.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            const command = commandInput.value.trim();
             executeCommand(command);
-            terminalInput.value = '';
+            commandInput.value = "";
         }
     });
 
     function executeCommand(command) {
-        if (command) {
-            const commandElement = document.createElement('div');
-            commandElement.textContent = `> ${command}`;
-            terminalContent.appendChild(commandElement);
+        printOutput(`<span class="prompt">guest@cyber-linux:~$</span> ${command}`);
 
-            // Simulate response
-            const responseElement = document.createElement('div');
-            responseElement.textContent = getResponseForCommand(command);
-            terminalContent.appendChild(responseElement);
-
-            terminalContent.scrollTop = terminalContent.scrollHeight;
+        if (command === "help") {
+            printOutput(`
+            Available commands:
+            - github user <username> (Find GitHub user)
+            - github repo <repo-name> (Find repositories)
+            - github commit <keyword> (Search commits)
+            - github issue <keyword> (Find issues/pull requests)
+            - github code <keyword> (Search code)
+            - github org <org-name> (Find organizations)
+            - google dork <dork> (Google dorking search)
+            - ls (List directories)
+            - pwd (Show current path)
+            - whoami (Show user)
+            - clear (Clear terminal)
+            - about (Go to GitHub portfolio)
+            `);
+        } else if (command.startsWith("github user ")) {
+            fetchGitHubUser(command.split(" ")[2]);
+        } else if (command.startsWith("github repo ")) {
+            fetchGitHubRepo(command.split(" ")[2]);
+        } else if (command.startsWith("google dork ")) {
+            googleDork(command.substring(13));
+        } else if (command === "about") {
+            window.location.href = "https://github.com/jusot99";
+        } else if (command === "clear") {
+            output.innerHTML = "";
+        } else if (command === "ls") {
+            printOutput("Documents  Downloads  Pictures  Projects  CyberLinux");
+        } else if (command === "pwd") {
+            printOutput("/home/guest");
+        } else if (command === "whoami") {
+            printOutput("guest");
+        } else {
+            printOutput(`<span class="red">${command}: command not found.</span>`);
         }
     }
 
-    function getResponseForCommand(command) {
-        switch (command.toLowerCase()) {
-            case 'help':
-                return 'Available commands: help, about, clear';
-            case 'about':
-                return 'Hacker Portal - The Ultimate Hacker Experience';
-            case 'clear':
-                terminalContent.innerHTML = '';
-                return '';
-            default:
-                return `Command not found: ${command}`;
-        }
-    }
-
-    searchForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const query = searchInput.value.trim();
-        if (query) {
-            searchGitHub(query);
-        }
-    });
-
-    function searchGitHub(query) {
-        fetch(`https://api.github.com/search/users?q=${query}`)
+    function fetchGitHubUser(username) {
+        fetch(`https://api.github.com/users/${username}`)
             .then(response => response.json())
             .then(data => {
-                displaySearchResults(data.items);
-            })
-            .catch(error => {
-                console.error('Error fetching GitHub users:', error);
-                searchResults.innerHTML = '<p>Error fetching GitHub users.</p>';
+                if (data.message === "Not Found") {
+                    printOutput(`<span class="red">User '${username}' not found.</span>`);
+                    return;
+                }
+                printOutput(`
+                    <div><img src="${data.avatar_url}" class="avatar" alt="Avatar">Username: ${data.login}</div>
+                    <div>Name: ${data.name || "N/A"}</div>
+                    <div>Bio: ${data.bio || "No bio available"}</div>
+                    <div>Location: ${data.location || "N/A"}</div>
+                    <div>Followers: ${data.followers}</div>
+                    <div>Following: ${data.following}</div>
+                    <div>Repositories: ${data.public_repos}</div>
+                    <div>Profile: <a href="${data.html_url}" target="_blank">${data.html_url}</a></div>
+                `);
             });
     }
 
-    function displaySearchResults(users) {
-        searchResults.innerHTML = '';
-        if (users.length === 0) {
-            searchResults.innerHTML = '<p>No users found.</p>';
-        } else {
-            users.forEach(user => {
-                fetch(user.url)
-                    .then(response => response.json())
-                    .then(userData => {
-                        const userName = userData.name ? userData.name : 'N/A';
-                        const userBio = userData.bio ? `<p>${userData.bio}</p>` : '';
-                        const userCard = `
-                            <div class="card">
-                                <div>
-                                    <a href="${userData.html_url}" target="_blank">
-                                        <img src="${userData.avatar_url}" alt="${userData.name}" class="avatar">
-                                    </a>
-                                </div>
-                                <div class="user-info">
-                                    <h2>${userData.login}</h2>
-                                    <h3>${userName}</h3>
-                                    ${userBio}
-                                    <ul>
-                                        <li>${userData.followers} <strong>Followers</strong></li>
-                                        <li>${userData.following} <strong>Following</strong></li>
-                                        <li>${userData.public_repos} <strong>Repos</strong></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        `;
-                        searchResults.innerHTML += userCard;
-                    });
+    function fetchGitHubRepo(repo) {
+        fetch(`https://api.github.com/search/repositories?q=${repo}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.items.length === 0) {
+                    printOutput(`<span class="red">No repositories found for '${repo}'.</span>`);
+                    return;
+                }
+                printOutput(`
+                    <div>Repositories found: ${data.items.length}</div>
+                    <div>First Repo: <a href="${data.items[0].html_url}" target="_blank">${data.items[0].full_name}</a></div>
+                `);
             });
-        }
+    }
+
+    function googleDork(query) {
+        const googleSearch = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        printOutput(`Searching Google Dork: ${query}\n[Click here]( ${googleSearch} )`);
+        window.open(googleSearch, "_blank");
+    }
+
+    function printOutput(text) {
+        output.innerHTML += `<p>${text}</p>`;
+        output.scrollTop = output.scrollHeight;
     }
 });
